@@ -11,9 +11,23 @@
 
 (defn get-user [id]
   (client/get (str "https://api.github.com/users/" id)))
+ 
+(defn body-parser [url]
+  (-> (client/get url)
+      :body
+      html/html-snippet))
+
+(defn get-title [dom]
+  (-> (html/select dom [:title])
+      first
+      :content
+      first))
 
 (defroutes handler
            (GET "/user/:id" [id] (get-user id))
+           (GET "/title" [url]
+                (response {:title (get-title 
+                                   (body-parser "https://dcleaner.github.io/"))}))
            (route/not-found (response {:message "not found"})))
 
 (def app
