@@ -23,11 +23,33 @@
       :content
       first))
 
+(defn get-okky [no]
+  (let [dom (body-parser (str "https://okky.kr/article/" no))]
+    ((fn [no title writer content]
+       {:no no
+        :title title
+        :writer writer
+        :content content})
+         no
+         (-> (html/select dom [:#content-body :.panel-title])
+             first :content first string/trim)
+         (-> (html/select dom [:.nickname])
+             first :content first string/trim)
+         (->> (-> (html/select dom [:.content-text]) 
+                  first 
+                  :content)
+              (filter (fn [node] 
+                        (string? (first (:content node)))))
+              (reduce (fn [acc node]
+                        (str acc (first (:content node)) "\n")) "")))))
+
 (defroutes handler
            (GET "/user/:id" [id] (get-user id))
            (GET "/title" [url]
                 (response {:title (get-title 
                                    (body-parser "https://dcleaner.github.io/"))}))
+           (GET "/okky/:no" [no]
+                (response (get-okky no)))
            (route/not-found (response {:message "not found"})))
 
 (def app
