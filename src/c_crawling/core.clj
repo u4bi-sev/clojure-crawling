@@ -4,10 +4,16 @@
             [compojure.handler :as h]
             [compojure.route :as route]
             [ring.middleware.json :as m-json]
-            [ring.middleware.cors :refer [wrap-cors]]))
+            [ring.middleware.cors :refer [wrap-cors]]
+            [clj-http.client :as client]
+            [net.cgrand.enlive-html :as html]
+            [clojure.string :as string]))
+
+(defn get-user [id]
+  (client/get (str "https://api.github.com/users/" id)))
 
 (defroutes handler
-           (GET "/" [id] "crawling")
+           (GET "/user/:id" [id] (get-user id))
            (route/not-found (response {:message "not found"})))
 
 (def app
